@@ -97,8 +97,13 @@ services:
       TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
       TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
       TWILIO_FROM_NUMBER: ${TWILIO_FROM_NUMBER:-}
+      TWILIO_WHATSAPP_FROM: ${TWILIO_WHATSAPP_FROM:-}
       JWT_SECRET: ${JWT_SECRET:-aegis-super-secret-jwt-key-change-me-in-production-32chars!}
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-demo}
+      # ── CORS — add Vercel URL here after Vercel deployment ────────────
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://proposal-montgomery-packed-pgp.trycloudflare.com,http://localhost:5173,http://localhost:3000}
+      # ── Twilio voice callback URL (must be public HTTPS) ─────────────
+      AEGIS_PUBLIC_BASE_URL: ${AEGIS_PUBLIC_BASE_URL:-https://proposal-montgomery-packed-pgp.trycloudflare.com/api}
     ports:
       - "8080:8080"
     healthcheck:
