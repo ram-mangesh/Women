@@ -1,0 +1,164 @@
+# AEGIS — AI Women Safety Intelligence Platform
+# Full-stack local development environment
+# Usage: docker compose up --build -d
+
+version: "3.9"
+
+services:
+  # ─── MySQL ────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: aegis-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: protect
+      MYSQL_ROOT_PASSWORD: dbpassword
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    # Port not exposed to host — local MySQL already uses 3306
+    # API connects internally via Docker network: mysql:3306
+    volumes:
+      - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pdbpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ─── Redis (caching + rate-limit) ────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: aegis-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
+
+  # ─── Kafka (event-driven broker in KRaft mode) ────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: aegis-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ─── Spring Boot API ─────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aegis-api
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      # ── Database (MySQL — matches application.yml) ────────────────────
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/protect?useUnicode=true&characterEncoding=utf8&createDatabaseIfNotExist=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: dbpassword
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      # ── Redis ─────────────────────────────────────────────────────────
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # ── Kafka ─────────────────────────────────────────────────────────
+      KAFKA_BROKERS: kafka:29092
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      # ── External services ─────────────────────────────────────────────
+      AI_SERVICE_URL: http://ai:8000
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM_NUMBER: ${TWILIO_FROM_NUMBER:-}
+      JWT_SECRET: ${JWT_SECRET:-aegis-super-secret-jwt-key-change-me-in-production-32chars!}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-demo}
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ─── FastAPI AI Services ─────────────────────────────────────────
+  ai:
+    build:
+      context: ./ai-services
+      dockerfile: Dockerfile
+    container_name: aegis-ai
+    restart: unless-stopped
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-demo}
+      HF_TOKEN: ${HF_TOKEN:-demo}
+      ENV: production
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+              count: all
+    # Remove the deploy block above if you don't have GPU
+
+  # ─── React Frontend ──────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: aegis-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080
+      VITE_WS_URL: ws://localhost:8080/ws
+    ports:
+      - "5173:80"
+
+  # ─── NGINX reverse proxy ─────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: aegis-nginx
+    restart: unless-stopped
+    depends_on:
+      - api
+      - ai
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/certs:/etc/nginx/certs:ro
+
+volumes:
+  mysqldata:

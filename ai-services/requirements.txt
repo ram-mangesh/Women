@@ -1,0 +1,43 @@
+# AEGIS AI Services — FastAPI microservice
+# Real-time threat intelligence, voice AI, vision AI
+# Updated for Python 3.14 compatibility
+
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.1
+pydantic-settings>=2.2.1
+
+# AI / ML — core
+torch>=2.9.0
+torchaudio>=2.9.0
+transformers>=4.41.1
+faster-whisper>=1.0.2
+librosa>=0.10.2
+soundfile>=0.12.1
+
+# ML for new features (Phase 3)
+scikit-learn>=1.5.0
+networkx>=3.3
+xgboost>=2.1.0
+joblib>=1.4.2
+
+# Vision
+opencv-python-headless>=4.9.0.80
+ultralytics>=8.2.26
+Pillow>=10.3.0
+
+# Geospatial + routing
+numpy>=1.26.4
+requests>=2.32.3
+h3>=3.7.7
+shapely>=2.0.4
+geopy>=2.4.1
+
+# Caching + observability
+redis>=5.0.4
+python-json-logger>=2.0.7
+prometheus-fastapi-instrumentator>=7.0.0
+
+# Utilities
+python-multipart>=0.0.9
+httpx>=0.27.0

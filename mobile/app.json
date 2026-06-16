@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "AEGIS",
+    "slug": "aegis-mobile",
+    "version": "1.0.0",
+    "jsEngine": "hermes",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ai.aegis.mobile",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "AEGIS uses your location to provide safety alerts and safe routes.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "AEGIS needs background location for continuous safety monitoring.",
+        "NSMicrophoneUsageDescription": "AEGIS uses microphone for voice-triggered SOS.",
+        "NSCameraUsageDescription": "AEGIS uses camera for AI threat detection.",
+        "NSMotionUsageDescription": "AEGIS uses motion sensors for shake-to-SOS"
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyC45H_WNb3qGBzEpXHLx6RkeKy3A_GKLsU"
+      }
+    },
+    "android": {
+      "package": "ai.aegis.mobile",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "VIBRATE"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyC45H_WNb3qGBzEpXHLx6RkeKy3A_GKLsU"
+        }
+      }
+    },
+    "plugins": [
+      "expo-location",
+      "expo-camera",
+      "expo-notifications",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "apiBaseUrl": "http://10.113.57.25:8080",
+      "wsUrl": "ws://10.113.57.25:8080/ws"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    }
+  }
+}

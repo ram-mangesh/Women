@@ -1,0 +1,48 @@
+# Node.js
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+api_logs.txt
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment files
+.env
+.env.production
+.env.development
+.env.local
+
+# Java / Maven build
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/.factorypath
+backend/bin/
+backend/.maven/
+
+# Temp/Cache
+.parcel-cache
+.cache
+.eslintcache

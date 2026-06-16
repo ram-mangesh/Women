@@ -1,0 +1,135 @@
+# ═══════════════════════════════════════════════════════════════════
+# AEGIS API — Spring Boot configuration
+# ═══════════════════════════════════════════════════════════════════
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: aegis-api
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/protect?useUnicode=true&characterEncoding=utf8&createDatabaseIfNotExist=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+
+  # Flyway disabled — using JPA ddl-auto=update instead
+  flyway:
+    enabled: false
+
+  # Cache & Redis Configuration
+  cache:
+    type: redis
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:${REDIS_HOST:localhost}}
+      port: ${SPRING_DATA_REDIS_PORT:${REDIS_PORT:6379}}
+      password: ${SPRING_DATA_REDIS_PASSWORD:${REDIS_PASSWORD:}}
+      timeout: 2000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: -1ms
+
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:${KAFKA_BROKERS:localhost:9092}}
+    consumer:
+      group-id: aegis-api-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      retries: 3
+
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+    default-property-inclusion: non_null
+
+# ── Custom: JWT ──────────────────────────────────────────────────────
+aegis:
+  jwt:
+    secret: ${JWT_SECRET:aegis-super-secret-jwt-key-change-me-in-production-32chars!}
+    access-expiry-ms: ${JWT_ACCESS_EXPIRY_MS:86400000}
+    refresh-expiry-ms: ${JWT_REFRESH_EXPIRY_MS:604800000}
+    issuer: aegis-api
+
+  # ── Twilio ────────────────────────────────────────────────────────
+  twilio:
+    account-sid: ${TWILIO_ACCOUNT_SID:}
+    auth-token:  ${TWILIO_AUTH_TOKEN:}
+    from-number: ${TWILIO_FROM_NUMBER:}
+    whatsapp-from: ${TWILIO_WHATSAPP_FROM:}
+
+  # ── AI microservice ───────────────────────────────────────────────
+  ai:
+    base-url: ${AI_SERVICE_URL:http://localhost:8000}
+    timeout-ms: 5000
+
+  # ── Google Maps ───────────────────────────────────────────────────
+  maps:
+    api-key: ${GOOGLE_MAPS_API_KEY:demo}
+
+  # ── Public Base URL (for ngrok/public access to callbacks) ──────────
+  public-base-url: ${AEGIS_PUBLIC_BASE_URL:http://localhost:8080}
+
+  # ── Emergency escalation ──────────────────────────────────────────
+  escalation:
+    guardian-wait-seconds: 30
+    auto-call-after-seconds: 60
+    police-dispatch-after-seconds: 90
+
+# ── Actuator / observability ─────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# ── Logging ──────────────────────────────────────────────────────────
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+    com.aegis: DEBUG
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} — %msg%n"
+
+# ── Swagger ──────────────────────────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
