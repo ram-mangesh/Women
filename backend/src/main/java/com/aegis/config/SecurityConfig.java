@@ -22,7 +22,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableMethodSecurity
@@ -78,8 +80,27 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        // ALLOWED_ORIGINS: comma-separated list of allowed origins.
+        // Set this env var to your Vercel URL + Cloudflare tunnel URL.
+        // Example: "https://aegis.vercel.app,https://my-tunnel.trycloudflare.com"
+        // Defaults to localhost ports for local development.
+        String rawOrigins = System.getenv("ALLOWED_ORIGINS");
+        List<String> origins;
+        if (rawOrigins != null && !rawOrigins.isBlank()) {
+            origins = Arrays.stream(rawOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+        } else {
+            origins = List.of(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "http://localhost:4173"
+            );
+        }
+
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(List.of("http://localhost:*", "https://*.aegis.ai"));
+        cfg.setAllowedOriginPatterns(origins);
         cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);
