@@ -23,7 +23,7 @@ function distM(lat1: number, lon1: number, lat2: number, lon2: number) {
 const etaWalk = (m: number) => Math.ceil(m / 83); // 5 km/h walking
 
 // ── Google Places Nearby Search (no SDK needed) ──────────────────────
-const PLACES_KEY = "AIzaSyC7V4CpKG5pIkr5w9_hT35u28w2P2oWIHM"; // same key used in MapView
+const PLACES_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "demo";
 
 async function fetchNearby(lat: number, lng: number, type: string, keyword?: string) {
   const radius = 3000;

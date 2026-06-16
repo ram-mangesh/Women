@@ -20,7 +20,7 @@
         "NSMotionUsageDescription": "AEGIS uses motion sensors for shake-to-SOS"
       },
       "config": {
-        "googleMapsApiKey": "AIzaSyC45H_WNb3qGBzEpXHLx6RkeKy3A_GKLsU"
+        "googleMapsApiKey": ""
       }
     },
     "android": {
@@ -34,7 +34,7 @@
       ],
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyC45H_WNb3qGBzEpXHLx6RkeKy3A_GKLsU"
+          "apiKey": ""
         }
       }
     },

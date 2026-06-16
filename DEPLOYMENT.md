@@ -49,5 +49,5 @@ This guide describes how to deploy the AEGIS backend to Railway and the React fr
    Add the following environment variables:
    - `VITE_API_BASE_URL` = `https://<your-railway-api-domain>`
    - `VITE_WS_URL` = `wss://<your-railway-api-domain>/ws`
-   - `VITE_GOOGLE_MAPS_API_KEY` = `AIzaSyC45H_WNb3qGBzEpXHLx6RkeKy3A_GKLsU`
+   - `VITE_GOOGLE_MAPS_API_KEY` = `your_google_maps_api_key`
 4. **Deploy**: Click **Deploy**. Vercel will build the frontend and serve it globally with SPA routing enabled via `vercel.json`.
