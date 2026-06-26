@@ -443,9 +443,15 @@ export default function Layout() {
       <div className="relative z-10 flex">
         {/* Sidebar */}
         <aside
-          className={`${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 fixed lg:sticky top-0 h-screen w-[260px] shrink-0 z-40 transition-transform duration-300`}
+          className={`${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 fixed lg:sticky top-0 h-screen w-[260px] shrink-0 z-50 transition-transform duration-300 ease-in-out`}
         >
-          <div className="h-full p-5 glass-strong m-3 flex flex-col">
+          <div className="h-full p-5 m-3 flex flex-col rounded-[22px] border border-white/10"
+            style={{
+              background: "linear-gradient(180deg, rgba(10,13,31,0.98) 0%, rgba(5,6,15,0.99) 100%)",
+              backdropFilter: "blur(22px) saturate(160%)",
+              WebkitBackdropFilter: "blur(22px) saturate(160%)",
+            }}
+          >
             <div className="flex items-center gap-3 mb-3">
               <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 grid place-items-center glow-pink">
                 <Shield className="w-6 h-6 text-white" />
@@ -628,7 +634,13 @@ export default function Layout() {
         </AnimatePresence>
       </div>
 
-      {open && <div className="lg:hidden fixed inset-0 bg-black/60 z-30" onClick={() => setOpen(false)} />}
+      {open && (
+        <div
+          className="lg:hidden fixed inset-0 z-40"
+          style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)" }}
+          onClick={() => setOpen(false)}
+        />
+      )}
     </div>
   );
 }
